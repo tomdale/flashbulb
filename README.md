@@ -22,6 +22,12 @@ npm start -- https://example.com   # url optional; you can navigate manually
 - **Enter** — reload current page + capture
 - **Ctrl-C** — quit
 
+For unattended/CI use, `--capture` runs headless, captures the url once, and exits:
+
+```bash
+npm start -- --capture https://example.com
+```
+
 Screenshots land in `captures/<timestamp>-<host-port-path>/000.png, 001.png, …`
 (e.g. `dev.localhost:3024/dashboard` → `captures/20260628-2145-dev.localhost-3024-dashboard/`)
 with a `frames.json` recording each kept frame's time offset and change ratio.
@@ -36,5 +42,6 @@ with a `frames.json` recording each kept frame's time offset and change ratio.
 | `-q, --quiet` | `10000` | stop after this many ms of no change once loaded |
 | `-m, --max` | `30000` | hard cap per session |
 | `--profile` | `$XDG_DATA_HOME/flashbulb/profile` | Chrome profile dir; logins persist |
+| `-c, --capture` | off | headless single capture of the url, then exit |
 
 Uses your installed Chrome, so no large download is needed.

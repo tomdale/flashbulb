@@ -22,6 +22,7 @@ program
   .option("-q, --quiet <ms>", "stop after no changes for this long once loaded", (v) => parseInt(v, 10), 10000)
   .option("-m, --max <ms>", "hard cap per capture session", (v) => parseInt(v, 10), 30000)
   .option("--profile <dir>", "Chrome profile dir (persists logins)", defaultProfile)
+  .option("-c, --capture", "run headless: capture the url once, then exit")
   .parse();
 
 const url = program.args[0];
@@ -52,11 +53,16 @@ function stamp(): string {
   return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`;
 }
 
+if (opts.capture && !url) {
+  console.error(chalk.red("--capture requires a url"));
+  process.exit(1);
+}
+
 mkdirSync(opts.profile, { recursive: true });
 const browser = await puppeteer.launch({
   channel: "chrome",
-  headless: false,
-  defaultViewport: null,
+  headless: Boolean(opts.capture),
+  defaultViewport: opts.capture ? { width: 1280, height: 800 } : null,
   userDataDir: opts.profile,
 });
 const [page] = await browser.pages();
@@ -83,9 +89,20 @@ async function runCapture() {
     clear +
       chalk.green(`✔ kept ${r.kept}/${r.seen} frames in ${r.durationMs}ms (${r.reason})\n`) +
       chalk.cyan(`  gallery: ${gallery}\n`) +
-      chalk.dim("press Enter to capture again · Ctrl-C to quit\n"),
+      (opts.capture ? "" : chalk.dim("press Enter to capture again · Ctrl-C to quit\n")),
   );
   busy = false;
+}
+
+async function shutdown() {
+  process.stdout.write(chalk.dim("\nclosing…\n"));
+  await browser.close().catch(() => {});
+  process.exit(0);
+}
+
+if (opts.capture) {
+  await runCapture();
+  await shutdown();
 }
 
 process.stdin.setRawMode?.(true);
@@ -95,11 +112,5 @@ process.stdin.on("data", (key: string) => {
   if (key === "") shutdown();
   else if ((key === "\r" || key === "\n") && !busy) void runCapture();
 });
-
-async function shutdown() {
-  process.stdout.write(chalk.dim("\nclosing…\n"));
-  await browser.close().catch(() => {});
-  process.exit(0);
-}
 
 console.log(chalk.bold("flashbulb ready.") + chalk.dim(" navigate/auth in the browser, then press Enter to reload + capture. Ctrl-C to quit."));
