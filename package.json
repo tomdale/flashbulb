@@ -2,6 +2,7 @@
   "name": "flashbulb",
   "version": "1.0.0",
   "description": "Capture viewport screenshots of every distinct render state during page load",
+  "packageManager": "pnpm@11.9.0",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

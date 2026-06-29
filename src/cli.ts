@@ -8,7 +8,7 @@ import { program } from "commander";
 import puppeteer from "puppeteer";
 import { capture } from "./capture.ts";
 
-// Chrome profile holds logins, so it's persistent app data: XDG_DATA_HOME.
+// Browser profile holds logins, so it's persistent app data: XDG_DATA_HOME.
 const dataHome = process.env.XDG_DATA_HOME || join(homedir(), ".local", "share");
 const defaultProfile = join(dataHome, "flashbulb", "profile");
 
@@ -21,7 +21,7 @@ program
   .option("-p, --pixel-threshold <n>", "per-pixel color tolerance (0..1)", parseFloat, 0.1)
   .option("-q, --quiet <ms>", "stop after no changes for this long once loaded", (v) => parseInt(v, 10), 10000)
   .option("-m, --max <ms>", "hard cap per capture session", (v) => parseInt(v, 10), 30000)
-  .option("--profile <dir>", "Chrome profile dir (persists logins)", defaultProfile)
+  .option("--profile <dir>", "browser profile dir (persists logins)", defaultProfile)
   .option("-c, --capture", "run headless: capture the url once, then exit")
   .parse();
 
@@ -60,7 +60,6 @@ if (opts.capture && !url) {
 
 mkdirSync(opts.profile, { recursive: true });
 const browser = await puppeteer.launch({
-  channel: "chrome",
   headless: Boolean(opts.capture),
   defaultViewport: opts.capture ? { width: 1280, height: 800 } : null,
   userDataDir: opts.profile,
